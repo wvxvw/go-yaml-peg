@@ -1,0 +1,37 @@
+package goyamlpeg
+
+type Yaml Peg {
+   Messages
+}
+
+yaml <- skip yaml_stream !.
+
+skip <- (' ' / '\t' / '\r' / '\n')*
+nl <- '\n\r' / '\n' / '\r'
+space <- (' ' / '\t')*
+uri <- [[A-Z]]+
+letter <- [[A-Z]]
+alnum <- ([[A-Z]] / [0-9])*
+id <- letter alnum*
+
+yaml_preamble <- (yaml_pi nl+ tag_pi
+                 / yaml_pi
+                 / tag_pi) nl+
+yaml_message_start <- '---'
+yaml_message_end <- '...'
+yaml_message <- (yaml_preamble yaml_message_start nl+ <yaml_doc> nl+ yaml_message_end 
+                / yaml_message_start nl+ <yaml_doc> nl+ yaml_message_end
+                / <yaml_doc> nl+ yaml_message_end
+                / yaml_preamble yaml_message_start nl+ <yaml_doc>
+                / yaml_message_start nl+ <yaml_doc>
+                / <yaml_doc>) nl* { p.Append(buffer[begin:end]) }
+
+yaml_stream <- yaml_message*
+
+yaml_pi <- '%YAML' space [1-9]+ '.' [0-9]+
+tag_pi <- '%TAG' space tag_decl
+tag_decl <- '!' space uri
+         / '!' space id space '!' uri
+         / '!!' space uri
+
+yaml_doc <- [[A-Z]]+
