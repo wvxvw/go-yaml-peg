@@ -14,6 +14,8 @@ body
 		t.Fatalf("Parsing failed: %+v", err)
 	}
 	yaml.Execute()
+	// yaml.PrintSyntax()
+	yaml.PrintSyntaxTree()
 }
 
 func TestTwoMessages(t *testing.T) {

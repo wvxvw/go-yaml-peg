@@ -8,6 +8,7 @@ yaml <- skip yaml_stream !.
 
 skip <- (' ' / '\t' / '\r' / '\n')*
 nl <- '\n\r' / '\n' / '\r'
+nb <- (!nl)*
 space <- (' ' / '\t')*
 uri <- [[A-Z]]+
 letter <- [[A-Z]]
@@ -34,4 +35,27 @@ tag_decl <- '!' space uri
          / '!' space id space '!' uri
          / '!!' space uri
 
-yaml_doc <- [[A-Z]]+
+yaml_doc <- scalar
+          / seq
+          / map
+          / comment
+
+comment <- '#' nb
+
+chomping_indicator <- '+' / '-'
+indent_indicator <- ('|' / '>') [1-9]?
+scalar <- ((indent_indicator 
+           / chomping_indicator
+           / indent_indicator chomping_indicator) 
+           comment? nl simple_scalar)
+          / simple_scalar
+simple_scalar <- literal / quoted_literal / apos_literal
+
+# TODO
+seq <- 'seq'
+map <- 'map'
+literal <- [[A-Z]]+
+escaped <- '\\x' [0-9] [0-9]
+         / '\\u' [0-9] [0-9] [0-9] [0-9]
+apos_literal <- "'" ([~\'] / "''")* "'"
+quoted_literal <- '"' ([~"\\] / escaped)* '"'
